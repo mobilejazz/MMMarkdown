@@ -109,7 +109,28 @@ static NSString * __HTMLStartTagForElement(MMElement *anElement)
         case MMElementTypeCodeSpan:
             return @"<code>";
         case MMElementTypeImage:
-            if (anElement.title != nil)
+            if ([anElement.href hasPrefix:@"link"])
+            {
+                return [NSString stringWithFormat:@"<div class='link'><h3>In-App Link</h3>\n%@\n</div>", __HTMLEscapedString(anElement.stringValue)];
+            }
+            else if ([anElement.href isEqualToString:@"audio"]
+                     || [anElement.href isEqualToString:@"image"]
+                     || [anElement.href isEqualToString:@"video"]
+                     || [anElement.href isEqualToString:@"animation"])
+            {
+                if  (anElement.title != nil)
+                {
+                    return [NSString stringWithFormat:@"<div class='media'><h3>%@</h3>\n%@\n</div>", __HTMLEscapedString(anElement.title), __HTMLEscapedString(anElement.stringValue)];
+                }
+                else
+                {
+                    return [NSString stringWithFormat:@"<div class='media'><h3>%@</h3>\n%@\n</div>", __HTMLEscapedString(anElement.href), __HTMLEscapedString(anElement.stringValue)];
+                }
+            }
+            
+            
+            
+            /*if (anElement.title != nil)
             {
                 return [NSString stringWithFormat:@"<img src=\"%@\" alt=\"%@\" title=\"%@\" />",
                         __HTMLEscapedString(anElement.href),
@@ -118,7 +139,7 @@ static NSString * __HTMLStartTagForElement(MMElement *anElement)
             }
             return [NSString stringWithFormat:@"<img src=\"%@\" alt=\"%@\" />",
                     __HTMLEscapedString(anElement.href),
-                    __HTMLEscapedString(anElement.stringValue)];
+                    __HTMLEscapedString(anElement.stringValue)]; */
         case MMElementTypeLink:
             if (anElement.title != nil)
             {

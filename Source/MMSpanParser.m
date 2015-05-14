@@ -204,6 +204,15 @@ static NSString * const ESCAPABLE_CHARS = @"\\`*_{}[]()#+-.!>";
 {
     MMElement *element;
     
+    if (self.parseImages)
+    {
+        [scanner beginTransaction];
+        element = [self _parseImageWithScanner:scanner];
+        [scanner commitTransaction:element != nil];
+        if (element)
+            return element;
+    }
+    
     if (self.extensions & MMMarkdownExtensionsStrikethroughs)
     {
         [scanner beginTransaction];
@@ -275,15 +284,6 @@ static NSString * const ESCAPABLE_CHARS = @"\\`*_{}[]()#+-.!>";
         
         [scanner beginTransaction];
         element = [self _parseLinkWithScanner:scanner];
-        [scanner commitTransaction:element != nil];
-        if (element)
-            return element;
-    }
-    
-    if (self.parseImages)
-    {
-        [scanner beginTransaction];
-        element = [self _parseImageWithScanner:scanner];
         [scanner commitTransaction:element != nil];
         if (element)
             return element;
