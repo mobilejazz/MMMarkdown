@@ -44,6 +44,7 @@ static NSString * const ESCAPABLE_CHARS = @"\\`*_{}[]()#+-.!>";
 @property (assign, nonatomic) BOOL parseImages;
 @property (assign, nonatomic) BOOL parseLinks;
 @property (assign, nonatomic) BOOL parseStrong;
+@property (assign, nonatomic) BOOL parseVideo;
 @end
 
 @implementation MMSpanParser
@@ -62,6 +63,7 @@ static NSString * const ESCAPABLE_CHARS = @"\\`*_{}[]()#+-.!>";
         self.parseImages = YES;
         self.parseLinks  = YES;
         self.parseStrong = YES;
+        self.parseVideo = YES;
     }
     
     return self;
@@ -203,6 +205,15 @@ static NSString * const ESCAPABLE_CHARS = @"\\`*_{}[]()#+-.!>";
 - (MMElement *)_parseNextElementWithScanner:(MMScanner *)scanner
 {
     MMElement *element;
+    
+    if  (self.parseVideo)
+    {
+        [scanner beginTransaction];
+        element = [self _parseVideoWithScanner:scanner];
+        [scanner commitTransaction:element != nil];
+        if (element)
+            return element;
+    }
     
     if (self.parseImages)
     {
@@ -1279,6 +1290,95 @@ static NSString * const ESCAPABLE_CHARS = @"\\`*_{}[]()#+-.!>";
     }
     
     return result;
+}
+
+/**
+ *  Parses custom mentions and links with the format '@[title](thumblink)(link)'
+ *  Use it for your own elements like mentions or internal links.
+ */
+- (MMElement *)_parseVideoWithScanner:(MMScanner *)scanner
+{
+    unichar character = [scanner nextCharacter];
+    if (character != '@')
+        return nil;
+    [scanner advance];
+    NSCharacterSet *boringChars;
+    NSUInteger      level;
+    
+    MMElement *element = [MMElement new];
+
+    NSUInteger titleLocation = NSNotFound;
+    NSUInteger titleEnd      = NSNotFound;
+    // Find the []
+    titleLocation = scanner.location+1;
+    element.innerRanges = [self _parseLinkTextBodyWithScanner:scanner];
+    if (!element.innerRanges)
+        return nil;
+    titleEnd = scanner.location-1;
+    // Find the ()
+    if ([scanner nextCharacter] != '(')
+        return nil;
+    [scanner advance];
+    
+    NSUInteger      urlLocation = scanner.location;
+    NSUInteger      urlEnd      = urlLocation;
+    boringChars = [[NSCharacterSet characterSetWithCharactersInString:@"()\\ \t"] invertedSet];
+    level       = 1;
+    while (level > 0)
+    {
+        [scanner skipCharactersFromSet:boringChars];
+        if ([scanner atEndOfLine])
+            return nil;
+        urlEnd = scanner.location;
+        
+        unichar character = [scanner nextCharacter];
+        if (character == ')')
+        {
+            level -= 1;
+        }
+        urlEnd = scanner.location;
+        [scanner advance];
+    }
+    
+    
+    NSRange   urlRange = NSMakeRange(urlLocation, urlEnd-urlLocation);
+    NSString *imageHref     = [scanner.string substringWithRange:urlRange];
+    
+    // Find second ()
+    if ([scanner nextCharacter] != '(')
+        return nil;
+    [scanner advance];
+    
+    urlLocation = scanner.location;
+    urlEnd      = urlLocation;
+    level       = 1;
+    while (level > 0)
+    {
+        [scanner skipCharactersFromSet:boringChars];
+        if ([scanner atEndOfLine])
+            return nil;
+        urlEnd = scanner.location;
+        
+        unichar character = [scanner nextCharacter];
+        if (character == ')')
+        {
+            level -= 1;
+        }
+        urlEnd = scanner.location;
+        [scanner advance];
+    }
+    
+    urlRange = NSMakeRange(urlLocation, urlEnd-urlLocation);
+    NSString *videoHref     = [scanner.string substringWithRange:urlRange];
+    
+    element.range = NSMakeRange(scanner.startLocation, scanner.location-scanner.startLocation);
+    element.thumbHref  = [self _stringWithBackslashEscapesRemoved:imageHref];
+    element.href = [self _stringWithBackslashEscapesRemoved:videoHref];
+    element.title = [scanner.string substringWithRange:NSMakeRange(titleLocation, titleEnd-titleLocation)];
+    element.type = MMElementTypeVideo;
+
+    
+    return element;
 }
 
 

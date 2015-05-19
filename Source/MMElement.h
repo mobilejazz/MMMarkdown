@@ -53,6 +53,7 @@ typedef enum
     MMElementTypeTableHeaderCell,
     MMElementTypeTableRow,
     MMElementTypeTableRowCell,
+    MMElementTypeVideo,
 } MMElementType;
 
 typedef NS_ENUM(NSInteger, MMTableCellAlignment)
@@ -75,6 +76,7 @@ typedef NS_ENUM(NSInteger, MMTableCellAlignment)
 @property (copy,   nonatomic) NSString      *title;
 @property (copy,   nonatomic) NSString      *identifier;
 @property (copy,   nonatomic) NSString      *stringValue;
+@property (copy,   nonatomic) NSString      *thumbHref;
 
 @property (assign, nonatomic) MMElement *parent;
 @property (copy,   nonatomic) NSArray   *children;

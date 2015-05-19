@@ -70,6 +70,8 @@ static NSString * __MMStringFromElementType(MMElementType type)
             return @"entity";
         case MMElementTypeDefinition:
             return @"definition";
+        case MMElementTypeVideo:
+            return @"video";
         default:
             return @"unknown";
     }
