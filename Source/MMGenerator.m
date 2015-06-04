@@ -123,7 +123,13 @@ static NSString * __HTMLStartTagForElement(MMElement *anElement)
         case MMElementTypeVideo:
             if (anElement.title != nil)
             {
-                return [NSString stringWithFormat:@"<p><a href=\"%@\"><img src=\"%@\" alt=\"%@\" title=\"%@\"/></a></p>",
+                /*
+                 <a href="http://google.com" style="display:block; position: relative;width: 100%;">
+                 <img src="http://www.itsartmag.com/features/itsart/wp-content/uploads/2013/04/with-any-sort-of-certainty-animation.jpg" style="width: 100%;" />
+                 <img src="http://i.stack.imgur.com/x8eHp.png" style="position: absolute; top: 50%; left: 50%; margin-left: -96px; margin-top:-96px;"/>
+                 </a>
+                 */
+                return [NSString stringWithFormat:@"<p><a href=\"%@\" style=\"position:relative; display:block\"><img src=\"%@\" alt=\"%@\" title=\"%@\" width=\"240\" height=\"180\"/></a></p>",
                         __HTMLEscapedString(anElement.href),
                         __HTMLEscapedString(anElement.thumbHref),
                         __HTMLEscapedString(anElement.stringValue),
