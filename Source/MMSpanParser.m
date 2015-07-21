@@ -1309,12 +1309,14 @@ static NSString * const ESCAPABLE_CHARS = @"\\`*_{}[]()#+-.!>";
 
     NSUInteger titleLocation = NSNotFound;
     NSUInteger titleEnd      = NSNotFound;
+    
     // Find the []
     titleLocation = scanner.location+1;
     element.innerRanges = [self _parseLinkTextBodyWithScanner:scanner];
     if (!element.innerRanges)
         return nil;
     titleEnd = scanner.location-1;
+    
     // Find the ()
     if ([scanner nextCharacter] != '(')
         return nil;
@@ -1339,7 +1341,6 @@ static NSString * const ESCAPABLE_CHARS = @"\\`*_{}[]()#+-.!>";
         urlEnd = scanner.location;
         [scanner advance];
     }
-    
     
     NSRange   urlRange = NSMakeRange(urlLocation, urlEnd-urlLocation);
     NSString *imageHref     = [scanner.string substringWithRange:urlRange];
@@ -1376,7 +1377,65 @@ static NSString * const ESCAPABLE_CHARS = @"\\`*_{}[]()#+-.!>";
     element.href = [self _stringWithBackslashEscapesRemoved:videoHref];
     element.title = [scanner.string substringWithRange:NSMakeRange(titleLocation, titleEnd-titleLocation)];
     element.type = MMElementTypeVideo;
-
+    
+    // Find third () for width
+    if ([scanner nextCharacter] != '(')
+        return element;
+    [scanner advance];
+    
+    urlLocation = scanner.location;
+    urlEnd      = urlLocation;
+    level       = 1;
+    while (level > 0)
+    {
+        [scanner skipCharactersFromSet:boringChars];
+        if ([scanner atEndOfLine])
+            return element;
+        urlEnd = scanner.location;
+        
+        unichar character = [scanner nextCharacter];
+        if (character == ')')
+        {
+            level -= 1;
+        }
+        urlEnd = scanner.location;
+        [scanner advance];
+    }
+    
+    urlRange = NSMakeRange(urlLocation, urlEnd-urlLocation);
+    NSString *width = [scanner.string substringWithRange:urlRange];
+    CGFloat videoThumbWidth = (CGFloat)[width floatValue];
+    
+    // Find fourth () for height
+    if ([scanner nextCharacter] != '(')
+        return element;
+    [scanner advance];
+    
+    urlLocation = scanner.location;
+    urlEnd      = urlLocation;
+    level       = 1;
+    while (level > 0)
+    {
+        [scanner skipCharactersFromSet:boringChars];
+        if ([scanner atEndOfLine])
+            return element;
+        urlEnd = scanner.location;
+        
+        unichar character = [scanner nextCharacter];
+        if (character == ')')
+        {
+            level -= 1;
+        }
+        urlEnd = scanner.location;
+        [scanner advance];
+    }
+    
+    urlRange = NSMakeRange(urlLocation, urlEnd-urlLocation);
+    NSString *height = [scanner.string substringWithRange:urlRange];
+    CGFloat videoThumbHeight = (CGFloat)[height floatValue];
+    
+    element.videoThumbWidth = videoThumbWidth;
+    element.videoThumbHeight = videoThumbHeight;
     
     return element;
 }

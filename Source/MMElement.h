@@ -77,6 +77,8 @@ typedef NS_ENUM(NSInteger, MMTableCellAlignment)
 @property (copy,   nonatomic) NSString      *identifier;
 @property (copy,   nonatomic) NSString      *stringValue;
 @property (copy,   nonatomic) NSString      *thumbHref;
+@property (assign, nonatomic) CGFloat       videoThumbWidth;
+@property (assign, nonatomic) CGFloat       videoThumbHeight;
 
 @property (assign, nonatomic) MMElement *parent;
 @property (copy,   nonatomic) NSArray   *children;

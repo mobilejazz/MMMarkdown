@@ -129,11 +129,13 @@ static NSString * __HTMLStartTagForElement(MMElement *anElement)
                  <img src="http://i.stack.imgur.com/x8eHp.png" style="position: absolute; top: 50%; left: 50%; margin-left: -96px; margin-top:-96px;"/>
                  </a>
                  */
-                return [NSString stringWithFormat:@"<p><a href=\"%@\" style=\"position:relative; display:block\"><img src=\"%@\" alt=\"%@\" title=\"%@\" width=\"240\" height=\"180\"/></a></p>",
+                return [NSString stringWithFormat:@"<p><a href=\"%@\" style=\"position:relative; display:block\"><img src=\"%@\" alt=\"%@\" title=\"%@\" width=\"%f\" height=\"%f\"/></a></p>",
                         __HTMLEscapedString(anElement.href),
                         __HTMLEscapedString(anElement.thumbHref),
                         __HTMLEscapedString(anElement.stringValue),
-                        __HTMLEscapedString(anElement.title)];
+                        __HTMLEscapedString(anElement.title),
+                        anElement.videoThumbWidth ? anElement.videoThumbWidth : 200,
+                        anElement.videoThumbHeight ? anElement.videoThumbHeight : 200];
             }
             return [NSString stringWithFormat:@"<p><a href=\"%@\"><img src=\"%@\" alt=\"%@\"/></a></p>",
                     __HTMLEscapedString(anElement.href),
